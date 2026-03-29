@@ -1,0 +1,17 @@
+Integrated terminal
+Convert to pdf/txt
+Upload to confluence
+Commandos via like ctrl + t (prints output in grey, keep output in txt or exit)
+Some special commands trough / like Claude has search behaviour 
+Find similar things
+Insert links to other md files (should work with exports? Maybe include like a header?)
+Make it block based excalidraw, mermaid
+When searching can preview, search blocks
+Indexer on edit for speed smart ranking, boost recent and so on
+Different modes showing different things
+Cursor/stack navigation
+Upload plugins
+
+
+
+Names? Noteweaver

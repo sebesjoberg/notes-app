@@ -12,8 +12,13 @@
 		"fix": "biome check src --write"
 	},
 	"dependencies": {
+		"@mantine/core": "^8.3.18",
+		"@mantine/hooks": "^8.3.18",
 		"@tauri-apps/api": "^2",
 		"@tauri-apps/plugin-opener": "^2",
+		"@tiptap/markdown": "^3.21.0",
+		"@tiptap/react": "^3.21.0",
+		"@tiptap/starter-kit": "^3.21.0",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0"
 	},
