@@ -318,32 +318,77 @@ function applySlashCommand(
 	commandKey: SlashCommandKey,
 	onInsertCodeBlock: (markdownOverride?: string) => void,
 ) {
-	const { $from } = editor.state.selection;
-	const from = $from.start();
-	const to = $from.end();
+	const slashCommandRange = getSlashCommandRange(editor);
 
-	editor.chain().focus().deleteRange({ from, to }).run();
+	if (!slashCommandRange) {
+		return false;
+	}
 
 	switch (commandKey) {
 		case "heading1":
-			editor.chain().focus().toggleHeading({ level: 1 }).run();
-			return true;
+			return createSlashCommandChain(editor, slashCommandRange)
+				.toggleHeading({ level: 1 })
+				.run();
 		case "heading2":
-			editor.chain().focus().toggleHeading({ level: 2 }).run();
-			return true;
+			return createSlashCommandChain(editor, slashCommandRange)
+				.toggleHeading({ level: 2 })
+				.run();
 		case "heading3":
-			editor.chain().focus().toggleHeading({ level: 3 }).run();
-			return true;
+			return createSlashCommandChain(editor, slashCommandRange)
+				.toggleHeading({ level: 3 })
+				.run();
 		case "bullets":
-			editor.chain().focus().toggleBulletList().run();
-			return true;
+			return createSlashCommandChain(editor, slashCommandRange)
+				.toggleBulletList()
+				.run();
 		case "numbered":
-			editor.chain().focus().toggleOrderedList().run();
-			return true;
-		case "code":
+			return createSlashCommandChain(editor, slashCommandRange)
+				.toggleOrderedList()
+				.run();
+		case "code": {
+			const didRemoveSlashCommand = editor
+				.chain()
+				.setMeta("addToHistory", false)
+				.focus()
+				.deleteRange(slashCommandRange)
+				.run();
+
+			if (!didRemoveSlashCommand) {
+				return false;
+			}
+
 			onInsertCodeBlock(editor.getMarkdown());
 			return true;
+		}
 	}
+}
+
+function getSlashCommandRange(editor: Editor) {
+	if (!editor.state.selection.empty) {
+		return null;
+	}
+
+	const { $from } = editor.state.selection;
+
+	return {
+		from: $from.start(),
+		to: $from.end(),
+	};
+}
+
+function createSlashCommandChain(
+	editor: Editor,
+	slashCommandRange: { from: number; to: number },
+) {
+	return (
+		editor
+			.chain()
+			// Merge the command transform into the typed slash query so undo skips
+			// the transient `/h1`-style text and restores the pre-command state.
+			.setMeta("appendedTransaction", editor.state.tr)
+			.focus()
+			.deleteRange(slashCommandRange)
+	);
 }
 
 function getSlashQuery(editor: Editor) {
