@@ -3,6 +3,11 @@ import { Markdown } from "@tiptap/markdown";
 import { type Editor, EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
+import {
+	SLASH_COMMANDS,
+	type SlashCommandDefinition,
+	type SlashCommandKey,
+} from "../config/slashCommands";
 import type { MarkdownBlock } from "../note-api";
 
 type MarkdownBlockEditorProps = {
@@ -16,60 +21,6 @@ type MarkdownBlockEditorProps = {
 	onFocusRequestHandled: () => void;
 	onInsertCodeBlock: (markdownOverride?: string) => void;
 };
-
-type SlashCommandKey =
-	| "heading1"
-	| "heading2"
-	| "heading3"
-	| "bullets"
-	| "numbered"
-	| "code";
-
-type SlashCommandDefinition = {
-	aliases: string[];
-	description: string;
-	key: SlashCommandKey;
-	label: string;
-};
-
-const SLASH_COMMANDS: SlashCommandDefinition[] = [
-	{
-		aliases: ["/header1", "/headers1", "/h1"],
-		description: "Large page heading",
-		key: "heading1",
-		label: "Header 1",
-	},
-	{
-		aliases: ["/header2", "/headers2", "/h2"],
-		description: "Section heading",
-		key: "heading2",
-		label: "Header 2",
-	},
-	{
-		aliases: ["/header3", "/headers3", "/h3"],
-		description: "Small section heading",
-		key: "heading3",
-		label: "Header 3",
-	},
-	{
-		aliases: ["/bullets", "/bullet", "/list"],
-		description: "Bullet list",
-		key: "bullets",
-		label: "Bullets",
-	},
-	{
-		aliases: ["/numbered", "/numbers", "/ordered"],
-		description: "Numbered list",
-		key: "numbered",
-		label: "Numbered",
-	},
-	{
-		aliases: ["/code"],
-		description: "Insert a code block below",
-		key: "code",
-		label: "Code block",
-	},
-];
 
 export function MarkdownBlockEditor({
 	active,

@@ -1,0 +1,52 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Slash Commands Config",
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"commands": {
+			"type": "array",
+			"minItems": 1,
+			"items": {
+				"type": "object",
+				"properties": {
+					"aliases": {
+						"type": "array",
+						"minItems": 1,
+						"uniqueItems": true,
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"pattern": "^[a-z0-9]+$"
+						}
+					},
+					"description": {
+						"type": "string",
+						"minLength": 1
+					},
+					"key": {
+						"type": "string",
+						"enum": [
+							"heading1",
+							"heading2",
+							"heading3",
+							"bullets",
+							"numbered",
+							"code"
+						]
+					},
+					"label": {
+						"type": "string",
+						"minLength": 1
+					}
+				},
+				"required": ["aliases", "description", "key", "label"],
+				"additionalProperties": false
+			}
+		}
+	},
+	"required": ["commands"],
+	"additionalProperties": false
+}

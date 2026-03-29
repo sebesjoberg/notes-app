@@ -1,0 +1,41 @@
+{
+	"$schema": "./slashCommands.schema.json",
+	"commands": [
+		{
+			"aliases": ["header1", "headers1", "h1"],
+			"description": "Large page heading",
+			"key": "heading1",
+			"label": "Header 1"
+		},
+		{
+			"aliases": ["header2", "headers2", "h2"],
+			"description": "Section heading",
+			"key": "heading2",
+			"label": "Header 2"
+		},
+		{
+			"aliases": ["header3", "headers3", "h3"],
+			"description": "Small section heading",
+			"key": "heading3",
+			"label": "Header 3"
+		},
+		{
+			"aliases": ["bullets", "bullet", "list"],
+			"description": "Bullet list",
+			"key": "bullets",
+			"label": "Bullets"
+		},
+		{
+			"aliases": ["numbered", "numbers", "ordered"],
+			"description": "Numbered list",
+			"key": "numbered",
+			"label": "Numbered"
+		},
+		{
+			"aliases": ["code"],
+			"description": "Insert a code block below",
+			"key": "code",
+			"label": "Code block"
+		}
+	]
+}
