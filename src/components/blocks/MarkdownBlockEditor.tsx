@@ -7,8 +7,10 @@ import {
 	SLASH_COMMANDS,
 	type SlashCommandDefinition,
 	type SlashCommandKey,
-} from "../config/slashCommands";
-import type { MarkdownBlock } from "../note-api";
+} from "../../config/slashCommands";
+import type { MarkdownBlock } from "../../note-api";
+import { SlashCommandSelector } from "../SlashCommandSelector";
+import classes from "./MarkdownBlockEditor.module.css";
 
 type MarkdownBlockEditorProps = {
 	active: boolean;
@@ -51,6 +53,17 @@ export function MarkdownBlockEditor({
 		syncSlashQuery(editor);
 	});
 
+	const invokeSlashCommand = useEffectEvent((commandKey: SlashCommandKey) => {
+		const currentEditor = editorRef.current;
+
+		if (!currentEditor) {
+			return;
+		}
+
+		applySlashCommand(currentEditor, commandKey, onInsertCodeBlock);
+		syncSlashQuery(currentEditor);
+	});
+
 	const handleEditorKeyDown = useEffectEvent(
 		(event: KeyboardEvent, currentEditor: Editor) => {
 			const nextSlashQuery = getSlashQuery(currentEditor);
@@ -90,12 +103,7 @@ export function MarkdownBlockEditor({
 
 				if (selectedCommand) {
 					event.preventDefault();
-					applySlashCommand(
-						currentEditor,
-						selectedCommand.key,
-						onInsertCodeBlock,
-					);
-					syncSlashQuery(currentEditor);
+					invokeSlashCommand(selectedCommand.key);
 					return true;
 				}
 			}
@@ -155,7 +163,7 @@ export function MarkdownBlockEditor({
 			contentType: "markdown",
 			editorProps: {
 				attributes: {
-					class: "markdown-editor__content",
+					class: classes.content,
 				},
 				handleKeyDown: (_view, event) => {
 					const currentEditor = editorRef.current;
@@ -266,40 +274,21 @@ export function MarkdownBlockEditor({
 	);
 
 	return (
-		<div className="markdown-editor" data-active={active || undefined}>
+		<div className={classes.root} data-active={active || undefined}>
 			<EditorContent editor={editor} />
 			{active && matchingCommands.length > 0 ? (
-				<div className="markdown-editor__slash-helper">
-					{matchingCommands.map((command, index) => (
-						<button
-							className="markdown-editor__slash-option"
-							data-selected={selectedCommand?.key === command.key || undefined}
-							key={command.key}
-							onMouseDown={(event) => {
-								event.preventDefault();
-
-								if (!editor) {
-									return;
-								}
-
-								applySlashCommand(editor, command.key, onInsertCodeBlock);
-								syncSlashQuery(editor);
-								setSelectedSlashIndex(index);
-							}}
-							type="button"
-						>
-							<span className="markdown-editor__slash-option-label">
-								{command.label}
-							</span>
-							<span className="markdown-editor__slash-option-alias">
-								{command.aliases[0]}
-							</span>
-							<span className="markdown-editor__slash-option-description">
-								{command.description}
-							</span>
-						</button>
-					))}
-				</div>
+				<SlashCommandSelector
+					commands={matchingCommands}
+					onInvokeCommand={(commandKey) => {
+						invokeSlashCommand(commandKey);
+						setSelectedSlashIndex(
+							matchingCommands.findIndex(
+								(command) => command.key === commandKey,
+							),
+						);
+					}}
+					selectedCommandKey={selectedCommand?.key}
+				/>
 			) : null}
 		</div>
 	);

@@ -4,7 +4,8 @@ import {
 	useEffect,
 	useRef,
 } from "react";
-import type { CodeBlock } from "../note-api";
+import type { CodeBlock } from "../../note-api";
+import classes from "./CodeBlockEditor.module.css";
 
 type CodeBlockEditorProps = {
 	block: CodeBlock;
@@ -59,7 +60,6 @@ export function CodeBlockEditor({
 	return (
 		<Stack gap="sm">
 			<TextInput
-				className="code-language-input"
 				onChange={(event) =>
 					onChange({
 						...block,
@@ -75,7 +75,7 @@ export function CodeBlockEditor({
 			/>
 			<Textarea
 				autosize
-				className="code-editor__input"
+				classNames={{ input: classes.codeInput }}
 				minRows={8}
 				onChange={(event) =>
 					onChange({

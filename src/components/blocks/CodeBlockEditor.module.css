@@ -1,0 +1,6 @@
+.codeInput {
+	font-family: var(--mantine-font-family-monospace);
+	font-size: 0.95rem;
+	line-height: 1.6;
+	min-height: 220px;
+}

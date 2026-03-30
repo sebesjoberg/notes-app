@@ -1,0 +1,57 @@
+.root {
+	min-height: 100vh;
+}
+
+.header {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+.headerInner {
+	align-items: center;
+	display: flex;
+	gap: 1.5rem;
+	justify-content: space-between;
+	padding-block: 1.25rem;
+}
+
+.themeSwitch {
+	align-items: flex-end;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.tabsBar {
+	padding-block: 0.7rem 0.9rem;
+}
+
+.feedback {
+	padding-block: 2rem 3rem;
+}
+
+.emptyState {
+	align-items: center;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	justify-content: center;
+	min-height: 220px;
+	text-align: center;
+}
+
+.notePanels {
+	min-height: 0;
+}
+
+@media (max-width: 768px) {
+	.headerInner,
+	.themeSwitch {
+		align-items: flex-start;
+	}
+
+	.headerInner {
+		flex-direction: column;
+	}
+}

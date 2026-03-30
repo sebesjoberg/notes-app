@@ -1,0 +1,50 @@
+.panel {
+	display: none;
+}
+
+.panel[data-active] {
+	display: block;
+}
+
+.header {
+	position: sticky;
+	top: 7.8rem;
+	z-index: 5;
+}
+
+.toolbar,
+.meta {
+	align-items: center;
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	padding-block: 0.85rem;
+}
+
+.meta {
+	flex-wrap: wrap;
+}
+
+.status {
+	align-items: center;
+}
+
+.content {
+	padding-block: 2rem 3rem;
+}
+
+.documentFlow {
+	gap: 0.35rem;
+}
+
+@media (max-width: 768px) {
+	.header {
+		top: 10.6rem;
+	}
+
+	.toolbar,
+	.meta {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+}

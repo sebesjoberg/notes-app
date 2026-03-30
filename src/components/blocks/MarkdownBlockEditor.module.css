@@ -1,0 +1,50 @@
+.root {
+	position: relative;
+}
+
+.content {
+	color: var(--mantine-color-text);
+	min-height: 2.5rem;
+	outline: none;
+	padding: 0.1rem 0;
+}
+
+.content p {
+	font-size: 1.06rem;
+	line-height: 1.82;
+	margin: 0 0 0.85rem;
+}
+
+.content h1,
+.content h2,
+.content h3 {
+	color: var(--mantine-color-text);
+	line-height: 1.2;
+	margin: 0.35rem 0 0.9rem;
+}
+
+.content h1 {
+	font-size: 2rem;
+}
+
+.content h2 {
+	font-size: 1.55rem;
+}
+
+.content h3 {
+	font-size: 1.2rem;
+}
+
+.content ul,
+.content ol {
+	margin: 0 0 1rem;
+	padding-left: 1.6rem;
+}
+
+.content code {
+	background: var(--mantine-primary-color-light);
+	border-radius: 0.35rem;
+	font-family: var(--mantine-font-family-monospace);
+	font-size: 0.9em;
+	padding: 0.12rem 0.35rem;
+}

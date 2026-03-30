@@ -7,8 +7,6 @@ use std::{
 };
 use tauri::{AppHandle, Manager, Runtime};
 
-const DEFAULT_NOTE_NAME: &str = "default.md";
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct NoteDocument {
@@ -138,14 +136,12 @@ fn resolve_note_path<R: Runtime>(
 }
 
 fn validate_note_name(note_name: &str) -> Result<(), String> {
-    if note_name != DEFAULT_NOTE_NAME {
-        return Err(format!(
-            "Only {DEFAULT_NOTE_NAME} is supported in the current editor."
-        ));
-    }
-
     if note_name.contains('/') || note_name.contains('\\') || note_name.contains("..") {
         return Err(format!("Invalid note name: {note_name}"));
+    }
+
+    if note_name.trim().is_empty() {
+        return Err("Note name must not be empty.".into());
     }
 
     if !note_name.ends_with(".md") {
@@ -484,7 +480,7 @@ mod tests {
     #[test]
     fn save_and_load_round_trip_through_filesystem() {
         let test_root = unique_test_dir();
-        let note_path = test_root.join(DEFAULT_NOTE_NAME);
+        let note_path = test_root.join("default.md");
         let blocks = vec![
             Block::Markdown {
                 id: "block-1".into(),
@@ -497,10 +493,10 @@ mod tests {
             },
         ];
 
-        save_note_to_path(&note_path, DEFAULT_NOTE_NAME.into(), &blocks)
+        save_note_to_path(&note_path, "default.md".into(), &blocks)
             .expect("save should succeed");
-        let loaded = load_note_from_path(&note_path, DEFAULT_NOTE_NAME.into())
-            .expect("load should succeed");
+        let loaded =
+            load_note_from_path(&note_path, "default.md".into()).expect("load should succeed");
 
         assert_eq!(loaded.blocks, blocks);
 
@@ -510,14 +506,28 @@ mod tests {
     #[test]
     fn missing_file_loads_default_block() {
         let test_root = unique_test_dir();
-        let note_path = test_root.join(DEFAULT_NOTE_NAME);
+        let note_path = test_root.join("alternative.md");
 
-        let loaded = load_note_from_path(&note_path, DEFAULT_NOTE_NAME.into())
+        let loaded = load_note_from_path(&note_path, "alternative.md".into())
             .expect("missing file should still load");
 
         assert_eq!(loaded.blocks, default_blocks());
 
         fs::remove_dir_all(&test_root).expect("temporary directory should be removable");
+    }
+
+    #[test]
+    fn validate_note_name_accepts_generic_markdown_files() {
+        assert!(validate_note_name("default.md").is_ok());
+        assert!(validate_note_name("alternative.md").is_ok());
+    }
+
+    #[test]
+    fn validate_note_name_rejects_invalid_names() {
+        assert!(validate_note_name("../secret.md").is_err());
+        assert!(validate_note_name("nested/default.md").is_err());
+        assert!(validate_note_name("note.txt").is_err());
+        assert!(validate_note_name("").is_err());
     }
 
     fn unique_test_dir() -> PathBuf {
