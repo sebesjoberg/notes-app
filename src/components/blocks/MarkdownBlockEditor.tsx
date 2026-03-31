@@ -1,6 +1,7 @@
+import { RichTextEditor } from "@mantine/tiptap";
 import type { FocusPosition } from "@tiptap/core";
 import { Markdown } from "@tiptap/markdown";
-import { type Editor, EditorContent, useEditor } from "@tiptap/react";
+import { type Editor, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import {
@@ -36,11 +37,27 @@ export function MarkdownBlockEditor({
 	onInsertCodeBlock,
 }: MarkdownBlockEditorProps) {
 	const editorRef = useRef<Editor | null>(null);
+	const rootRef = useRef<HTMLDivElement | null>(null);
 	const [slashQuery, setSlashQuery] = useState<string | null>(null);
 	const [selectedSlashIndex, setSelectedSlashIndex] = useState(0);
+	const [selectorPosition, setSelectorPosition] = useState<{
+		flip: boolean;
+		top: number;
+	} | null>(null);
 
 	const syncSlashQuery = useEffectEvent((editor: Editor) => {
-		setSlashQuery(getSlashQuery(editor));
+		const query = getSlashQuery(editor);
+		setSlashQuery(query);
+
+		if (query && rootRef.current) {
+			const coords = editor.view.coordsAtPos(editor.state.selection.from);
+			const rootRect = rootRef.current.getBoundingClientRect();
+			const caretTop = coords.bottom - rootRect.top;
+			const spaceBelow = window.innerHeight - coords.bottom;
+			setSelectorPosition({ flip: spaceBelow < 260, top: caretTop });
+		} else {
+			setSelectorPosition(null);
+		}
 	});
 
 	const handleEditorUpdate = useEffectEvent((editor: Editor) => {
@@ -53,16 +70,18 @@ export function MarkdownBlockEditor({
 		syncSlashQuery(editor);
 	});
 
-	const invokeSlashCommand = useEffectEvent((commandKey: SlashCommandKey) => {
-		const currentEditor = editorRef.current;
+	const invokeSlashCommand = useEffectEvent(
+		(commandKey: SlashCommandKey, targetEditor?: Editor) => {
+			const currentEditor = targetEditor ?? editorRef.current ?? editor;
 
-		if (!currentEditor) {
-			return;
-		}
+			if (!currentEditor) {
+				return;
+			}
 
-		applySlashCommand(currentEditor, commandKey, onInsertCodeBlock);
-		syncSlashQuery(currentEditor);
-	});
+			applySlashCommand(currentEditor, commandKey, onInsertCodeBlock);
+			syncSlashQuery(currentEditor);
+		},
+	);
 
 	const handleEditorKeyDown = useEffectEvent(
 		(event: KeyboardEvent, currentEditor: Editor) => {
@@ -103,7 +122,7 @@ export function MarkdownBlockEditor({
 
 				if (selectedCommand) {
 					event.preventDefault();
-					invokeSlashCommand(selectedCommand.key);
+					invokeSlashCommand(selectedCommand.key, currentEditor);
 					return true;
 				}
 			}
@@ -162,18 +181,6 @@ export function MarkdownBlockEditor({
 			content: block.markdown,
 			contentType: "markdown",
 			editorProps: {
-				attributes: {
-					class: classes.content,
-				},
-				handleKeyDown: (_view, event) => {
-					const currentEditor = editorRef.current;
-
-					if (!currentEditor) {
-						return false;
-					}
-
-					return handleEditorKeyDown(event, currentEditor);
-				},
 				handleTextInput: (_view, _from, _to, text) => {
 					const currentEditor = editorRef.current;
 
@@ -205,6 +212,25 @@ export function MarkdownBlockEditor({
 		},
 		[block.id],
 	);
+
+	useEffect(() => {
+		if (!editor) {
+			return;
+		}
+
+		editorRef.current = editor;
+
+		const dom = editor.view.dom;
+
+		function onKeyDown(event: KeyboardEvent) {
+			if (handleEditorKeyDown(event, editor)) {
+				event.stopPropagation();
+			}
+		}
+
+		dom.addEventListener("keydown", onKeyDown, true);
+		return () => dom.removeEventListener("keydown", onKeyDown, true);
+	}, [editor]);
 
 	useEffect(() => {
 		if (!editor) {
@@ -274,11 +300,24 @@ export function MarkdownBlockEditor({
 	);
 
 	return (
-		<div className={classes.root} data-active={active || undefined}>
-			<EditorContent editor={editor} />
-			{active && matchingCommands.length > 0 ? (
+		<div
+			ref={rootRef}
+			className={classes.root}
+			data-active={active || undefined}
+		>
+			<RichTextEditor
+				classNames={{
+					root: classes.editor,
+					content: classes.editorContent,
+				}}
+				editor={editor}
+			>
+				<RichTextEditor.Content />
+			</RichTextEditor>
+			{active && matchingCommands.length > 0 && selectorPosition ? (
 				<SlashCommandSelector
 					commands={matchingCommands}
+					flip={selectorPosition.flip}
 					onInvokeCommand={(commandKey) => {
 						invokeSlashCommand(commandKey);
 						setSelectedSlashIndex(
@@ -288,6 +327,7 @@ export function MarkdownBlockEditor({
 						);
 					}}
 					selectedCommandKey={selectedCommand?.key}
+					top={selectorPosition.top}
 				/>
 			) : null}
 		</div>
@@ -369,15 +409,11 @@ function createSlashCommandChain(
 	editor: Editor,
 	slashCommandRange: { from: number; to: number },
 ) {
-	return (
-		editor
-			.chain()
-			// Merge the command transform into the typed slash query so undo skips
-			// the transient `/h1`-style text and restores the pre-command state.
-			.setMeta("appendedTransaction", editor.state.tr)
-			.focus()
-			.deleteRange(slashCommandRange)
-	);
+	return editor
+		.chain()
+		.setMeta("addToHistory", false)
+		.focus()
+		.deleteRange(slashCommandRange);
 }
 
 function getSlashQuery(editor: Editor) {

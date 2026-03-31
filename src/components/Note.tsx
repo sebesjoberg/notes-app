@@ -517,7 +517,7 @@ export function Note({ active, initialDocument, onSave }: NoteProps) {
 				shadow="none"
 				withBorder
 			>
-				<Container className={classes.toolbar} size="md">
+				<Container className={classes.toolbar} size="xl">
 					<Group gap="xs">
 						<Button
 							disabled={!hasActiveMarkdownEditor}
@@ -589,7 +589,7 @@ export function Note({ active, initialDocument, onSave }: NoteProps) {
 					</Button>
 				</Container>
 				<Divider />
-				<Container className={classes.meta} size="md">
+				<Container className={classes.meta} size="xl">
 					<Group className={classes.status} gap="sm">
 						<Badge color={status.color}>{status.label}</Badge>
 						<Button
@@ -612,7 +612,7 @@ export function Note({ active, initialDocument, onSave }: NoteProps) {
 				</Container>
 			</Paper>
 
-			<Container className={classes.content} size="md">
+			<div className={classes.content}>
 				<Stack gap="md">
 					{errorMessage ? (
 						<Alert color="danger" title="Editor error" variant="light">
@@ -687,7 +687,7 @@ export function Note({ active, initialDocument, onSave }: NoteProps) {
 						</Stack>
 					</Paper>
 				</Stack>
-			</Container>
+			</div>
 		</section>
 	);
 }

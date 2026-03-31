@@ -5,7 +5,7 @@
 	left: 0;
 	min-width: min(30rem, 100%);
 	position: absolute;
-	top: calc(100% + 0.35rem);
+	z-index: 20;
 }
 
 .option {
@@ -16,13 +16,9 @@
 	grid-template-columns: auto auto;
 	padding: 0.65rem 0.8rem;
 	text-align: left;
-	transition: background-color 160ms ease;
 }
 
-.option:hover {
-	background: var(--mantine-color-default-hover);
-}
-
+.option:hover,
 .option[data-selected] {
 	background: var(--mantine-color-default-hover);
 }
