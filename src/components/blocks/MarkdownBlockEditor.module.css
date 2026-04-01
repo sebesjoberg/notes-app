@@ -6,11 +6,6 @@
 	border: none;
 }
 
-.editorContent {
-	background: transparent;
-	border-radius: 0;
-}
-
-.editorContent .ProseMirror {
+.editor :global(.ProseMirror) {
 	padding: 0;
 }

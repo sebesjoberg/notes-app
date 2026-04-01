@@ -8,6 +8,7 @@ import classes from "./SlashCommandSelector.module.css";
 type SlashCommandSelectorProps = {
 	commands: SlashCommandDefinition[];
 	flip?: boolean;
+	onHoverCommand: (commandKey: SlashCommandKey) => void;
 	onInvokeCommand: (commandKey: SlashCommandKey) => void;
 	selectedCommandKey?: SlashCommandKey;
 	top?: number;
@@ -16,6 +17,7 @@ type SlashCommandSelectorProps = {
 export function SlashCommandSelector({
 	commands,
 	flip = false,
+	onHoverCommand,
 	onInvokeCommand,
 	selectedCommandKey,
 	top,
@@ -52,15 +54,17 @@ export function SlashCommandSelector({
 						event.preventDefault();
 						onInvokeCommand(command.key);
 					}}
+					onMouseEnter={() => onHoverCommand(command.key)}
 					style={{
 						background:
 							selectedCommandKey === command.key ? hoverBg : undefined,
+						borderRadius: 8,
 					}}
 				>
-					<Text className={classes.label} fw={700} span>
+					<Text fw={700} span>
 						{command.label}
 					</Text>
-					<Text c="dimmed" className={classes.alias} ff="monospace" span>
+					<Text c="dimmed" className={classes.alias} ff="monospace" size="sm" span>
 						{command.aliases[0]}
 					</Text>
 					<Text c="dimmed" className={classes.description} size="sm">

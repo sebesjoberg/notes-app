@@ -109,17 +109,11 @@ export function MarkdownBlockEditor({
 					}
 
 					const grandparent =
-						selection.$from.depth >= 2
-							? selection.$from.node(-1)
-							: null;
+						selection.$from.depth >= 2 ? selection.$from.node(-1) : null;
 
 					if (grandparent?.type.name === "listItem") {
 						event.preventDefault();
-						currentEditor
-							.chain()
-							.focus()
-							.liftListItem("listItem")
-							.run();
+						currentEditor.chain().focus().liftListItem("listItem").run();
 						return true;
 					}
 
@@ -216,16 +210,7 @@ export function MarkdownBlockEditor({
 			extensions: [
 				Markdown,
 				StarterKit.configure({
-					blockquote: false,
-					bold: false,
 					codeBlock: false,
-					dropcursor: false,
-					gapcursor: false,
-					horizontalRule: false,
-					italic: false,
-					link: false,
-					strike: false,
-					underline: false,
 				}),
 			],
 			content: block.markdown,
@@ -356,11 +341,14 @@ export function MarkdownBlockEditor({
 			data-active={active || undefined}
 		>
 			<RichTextEditor
-				classNames={{
-					root: classes.editor,
-					content: classes.editorContent,
-				}}
+				classNames={{ root: classes.editor }}
 				editor={editor}
+				styles={{
+					content: {
+						background: "transparent",
+						borderRadius: 0,
+					},
+				}}
 			>
 				<RichTextEditor.Content />
 			</RichTextEditor>
@@ -368,6 +356,13 @@ export function MarkdownBlockEditor({
 				<SlashCommandSelector
 					commands={matchingCommands}
 					flip={selectorPosition.flip}
+					onHoverCommand={(commandKey) => {
+						setSelectedSlashIndex(
+							matchingCommands.findIndex(
+								(command) => command.key === commandKey,
+							),
+						);
+					}}
 					onInvokeCommand={(commandKey) => {
 						invokeSlashCommand(commandKey);
 						setSelectedSlashIndex(
