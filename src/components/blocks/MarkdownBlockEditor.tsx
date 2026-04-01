@@ -23,6 +23,8 @@ type MarkdownBlockEditorProps = {
 	onFocus: (editor: Editor) => void;
 	onFocusRequestHandled: () => void;
 	onInsertCodeBlock: (markdownOverride?: string) => void;
+	onNavigateNext: () => void;
+	onNavigatePrevious: () => void;
 };
 
 export function MarkdownBlockEditor({
@@ -35,6 +37,8 @@ export function MarkdownBlockEditor({
 	onFocus,
 	onFocusRequestHandled,
 	onInsertCodeBlock,
+	onNavigateNext,
+	onNavigatePrevious,
 }: MarkdownBlockEditorProps) {
 	const editorRef = useRef<Editor | null>(null);
 	const rootRef = useRef<HTMLDivElement | null>(null);
@@ -88,13 +92,43 @@ export function MarkdownBlockEditor({
 			const nextSlashQuery = getSlashQuery(currentEditor);
 			const matchingCommands = getMatchingSlashCommands(nextSlashQuery);
 
-			if (
-				event.key === "Backspace" &&
-				shouldDeleteEmptyMarkdownBlock(currentEditor)
-			) {
-				event.preventDefault();
-				onDeleteEmptyBlock();
-				return true;
+			if (event.key === "Backspace" && !event.ctrlKey && !event.metaKey) {
+				const { selection } = currentEditor.state;
+
+				if (selection.empty && selection.$from.parentOffset === 0) {
+					const parentNode = selection.$from.parent;
+
+					if (parentNode.type.name === "heading") {
+						event.preventDefault();
+						currentEditor
+							.chain()
+							.focus()
+							.toggleHeading({ level: parentNode.attrs.level })
+							.run();
+						return true;
+					}
+
+					const grandparent =
+						selection.$from.depth >= 2
+							? selection.$from.node(-1)
+							: null;
+
+					if (grandparent?.type.name === "listItem") {
+						event.preventDefault();
+						currentEditor
+							.chain()
+							.focus()
+							.liftListItem("listItem")
+							.run();
+						return true;
+					}
+
+					if (shouldDeleteEmptyMarkdownBlock(currentEditor)) {
+						event.preventDefault();
+						onDeleteEmptyBlock();
+						return true;
+					}
+				}
 			}
 
 			if (matchingCommands.length > 0 && event.key === "ArrowDown") {
@@ -123,6 +157,22 @@ export function MarkdownBlockEditor({
 				if (selectedCommand) {
 					event.preventDefault();
 					invokeSlashCommand(selectedCommand.key, currentEditor);
+					return true;
+				}
+			}
+
+			if (event.key === "ArrowUp" && !event.shiftKey) {
+				if (currentEditor.view.endOfTextblock("up")) {
+					event.preventDefault();
+					onNavigatePrevious();
+					return true;
+				}
+			}
+
+			if (event.key === "ArrowDown" && !event.shiftKey) {
+				if (currentEditor.view.endOfTextblock("down")) {
+					event.preventDefault();
+					onNavigateNext();
 					return true;
 				}
 			}

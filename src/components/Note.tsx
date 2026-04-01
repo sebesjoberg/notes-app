@@ -364,14 +364,19 @@ export function Note({ active, initialDocument, onSave }: NoteProps) {
 			return;
 		}
 
-		pushDocumentHistorySnapshot();
-		applyDocumentBlocks(
-			document.blocks.map((block) =>
-				block.id === nextBlock.id ? nextBlock : block,
-			),
-			nextBlock.id,
-			null,
-		);
+		startTransition(() => {
+			setDocument((currentDocument) => ({
+				...currentDocument,
+				blocks: currentDocument.blocks.map((block) =>
+					block.id === nextBlock.id ? nextBlock : block,
+				),
+			}));
+		});
+
+		revisionRef.current += 1;
+		setHasUnsavedChanges(true);
+		setSaveState("idle");
+		setErrorMessage(null);
 	}
 
 	function insertCodeBlock(
@@ -440,6 +445,31 @@ export function Note({ active, initialDocument, onSave }: NoteProps) {
 		);
 	}
 
+	function navigateToBlock(
+		fromBlockId: string,
+		direction: "previous" | "next",
+	) {
+		const currentIndex = document.blocks.findIndex(
+			(block) => block.id === fromBlockId,
+		);
+
+		if (currentIndex === -1) {
+			return;
+		}
+
+		const targetIndex =
+			direction === "previous" ? currentIndex - 1 : currentIndex + 1;
+		const targetBlock = document.blocks[targetIndex];
+
+		if (!targetBlock) {
+			return;
+		}
+
+		const position = direction === "previous" ? "end" : "start";
+		setActiveBlockId(targetBlock.id);
+		setFocusRequest(buildFocusRequest(targetBlock, position));
+	}
+
 	function deleteBlock(blockId: string) {
 		const blockIndex = document.blocks.findIndex(
 			(block) => block.id === blockId,
@@ -454,6 +484,20 @@ export function Note({ active, initialDocument, onSave }: NoteProps) {
 			document.blocks[0]?.type === "markdown"
 		) {
 			return;
+		}
+
+		const blockToDelete = document.blocks[blockIndex];
+
+		if (blockToDelete.type === "markdown") {
+			const nextBlock = document.blocks[blockIndex + 1];
+			const prevBlock = document.blocks[blockIndex - 1];
+			const wouldStrandCodeBlock =
+				(blockIndex === 0 && nextBlock?.type === "code") ||
+				(prevBlock?.type === "code" && nextBlock?.type === "code");
+
+			if (wouldStrandCodeBlock) {
+				return;
+			}
 		}
 
 		pushDocumentHistorySnapshot();
@@ -651,6 +695,12 @@ export function Note({ active, initialDocument, onSave }: NoteProps) {
 											onInsertCodeBlock={(markdownOverride) =>
 												insertCodeBlock(block.id, markdownOverride)
 											}
+											onNavigateNext={() =>
+												navigateToBlock(block.id, "next")
+											}
+											onNavigatePrevious={() =>
+												navigateToBlock(block.id, "previous")
+											}
 										/>
 									</div>
 								) : (
@@ -669,7 +719,14 @@ export function Note({ active, initialDocument, onSave }: NoteProps) {
 											</Button>
 										</Group>
 										<CodeBlockEditor
+											active={activeBlockId === block.id && active}
 											block={block as CodeBlock}
+											focusPosition={
+												focusRequest?.blockId === block.id &&
+												focusRequest.target === "code"
+													? focusRequest.position
+													: undefined
+											}
 											focusRequestToken={
 												focusRequest?.blockId === block.id &&
 												focusRequest.target === "code"
@@ -680,6 +737,12 @@ export function Note({ active, initialDocument, onSave }: NoteProps) {
 											onDeleteEmptyBlock={() => deleteBlock(block.id)}
 											onFocus={() => setActiveCodeBlock(block.id)}
 											onFocusRequestHandled={clearFocusRequest}
+											onNavigateNext={() =>
+												navigateToBlock(block.id, "next")
+											}
+											onNavigatePrevious={() =>
+												navigateToBlock(block.id, "previous")
+											}
 										/>
 									</Paper>
 								),
@@ -751,6 +814,12 @@ function normalizeBlocks(blocks: Block[]) {
 		const fallbackBlock = createBlock("markdown");
 		normalizedBlocks.push(fallbackBlock);
 		idMap.set(fallbackBlock.id, fallbackBlock.id);
+	}
+
+	if (normalizedBlocks[0]?.type !== "markdown") {
+		const leadingBlock = createBlock("markdown");
+		normalizedBlocks.unshift(leadingBlock);
+		idMap.set(leadingBlock.id, leadingBlock.id);
 	}
 
 	return { blocks: normalizedBlocks, idMap };

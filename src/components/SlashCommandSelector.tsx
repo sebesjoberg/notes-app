@@ -1,4 +1,4 @@
-import { Paper, Text, UnstyledButton } from "@mantine/core";
+import { alpha, Paper, Text, UnstyledButton, useMantineTheme } from "@mantine/core";
 import type {
 	SlashCommandDefinition,
 	SlashCommandKey,
@@ -20,6 +20,9 @@ export function SlashCommandSelector({
 	selectedCommandKey,
 	top,
 }: SlashCommandSelectorProps) {
+	const theme = useMantineTheme();
+	const hoverBg = alpha(theme.colors.highlight[6], 0.16);
+
 	if (commands.length === 0) {
 		return null;
 	}
@@ -49,11 +52,15 @@ export function SlashCommandSelector({
 						event.preventDefault();
 						onInvokeCommand(command.key);
 					}}
+					style={{
+						background:
+							selectedCommandKey === command.key ? hoverBg : undefined,
+					}}
 				>
 					<Text className={classes.label} fw={700} span>
 						{command.label}
 					</Text>
-					<Text c="dimmed" className={classes.alias} span>
+					<Text c="dimmed" className={classes.alias} ff="monospace" span>
 						{command.aliases[0]}
 					</Text>
 					<Text c="dimmed" className={classes.description} size="sm">

@@ -15,6 +15,7 @@
 		"@mantine/core": "^9.0.0",
 		"@mantine/hooks": "^9.0.0",
 		"@mantine/tiptap": "^9.0.0",
+		"@monaco-editor/react": "^4.7.0",
 		"@tauri-apps/api": "^2",
 		"@tauri-apps/plugin-opener": "^2",
 		"@tiptap/markdown": "^3.21.0",

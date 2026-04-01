@@ -10,7 +10,7 @@
 
 .option {
 	align-items: center;
-	border-radius: var(--mantine-radius-md);
+	border-radius: 8px;
 	display: grid;
 	gap: 0.12rem 0.8rem;
 	grid-template-columns: auto auto;
@@ -18,15 +18,9 @@
 	text-align: left;
 }
 
-.option:hover,
-.option[data-selected] {
-	background: var(--mantine-color-default-hover);
-}
-
 .alias {
 	font-size: 0.88rem;
 	justify-self: end;
-	font-family: var(--mantine-font-family-monospace);
 }
 
 .description {
